@@ -1,3 +1,3 @@
-# ETN HISTORM
+# HS
 
-This is a simple automation script to plot temperature data from ETN equipment.
+This is a simple automation script to plot temperature data from equipment.

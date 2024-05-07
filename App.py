@@ -5,7 +5,7 @@ from plot_all import plot_all
 
 
 def app():
-    st.title('HISTORMs Temperature Data')
+    st.title('HS Temperature Data')
     file = st.file_uploader('Upload a file', type=['xlsx'])
 
     if file:
@@ -23,7 +23,7 @@ def app():
                     label="Download plots",
                     data=bytes,
                     # Use the formatted date string
-                    file_name=f"HISTORM {month_year} Temperature Plots.zip",
+                    file_name=f"HS {month_year} Temperature Plots.zip",
                     mime="application/zip"
                 )
 

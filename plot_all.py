@@ -6,7 +6,7 @@ import os
 
 
 def plot_all(file: str):
-    """Plots all the data from the given file (HISTORMs)
+    """Plots all the data from the given file
 
     Args:
         file (str): file path
