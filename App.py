@@ -2,7 +2,6 @@ import streamlit as st
 import shutil
 import os
 from plot_all import plot_all
-from datetime import datetime  # Add this line
 
 
 def app():
@@ -27,6 +26,10 @@ def app():
                     file_name=f"HISTORM {month_year} Temperature Plots.zip",
                     mime="application/zip"
                 )
+
+            # Delete the zip file and the 'plots' directory
+            os.remove('plots.zip')
+            shutil.rmtree('plots')
 
 
 app()
