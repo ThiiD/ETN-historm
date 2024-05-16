@@ -13,7 +13,12 @@ def HI82():
     if file:
         df = pd.read_excel(file)
         df = df.loc[(df['Holtec/Casks/HI82/Average Temp'] > 0) &
+                    (df['Holtec/Casks/HI82/Average Temp'] < 200) &
+
                     (df['Holtec/Environment/TIA/Value'] > 0) &
+                    (df['Holtec/Environment/TIA/Value'] < 200) &
+
+                    (df['Holtec/Casks/HI82/Delta Temp'] < 200) &
                     (df['Holtec/Casks/HI82/Delta Temp'] > 0)]
 
         # Let the user select the minimum value
