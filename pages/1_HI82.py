@@ -12,7 +12,10 @@ def HI82():
 
     if file:
         df = pd.read_excel(file)
-        df = df.loc[(df['Holtec/Casks/HI82/Average Temp'] > 0)]
+        df = df.loc[(df['Holtec/Casks/HI82/Average Temp'] > 0) &
+                    (df['Holtec/Environment/TIA/Value'] > 0) &
+                    (df['Holtec/Casks/HI82/Delta Temp'] > 0)]
+
         # Let the user select the minimum value
         min_val = st.number_input(
             'Mininum Environment Temperature', value=df['Holtec/Environment/TIA/Value'].min())
