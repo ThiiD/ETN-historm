@@ -18,10 +18,10 @@ def HI82():
 
         # Let the user select the minimum value
         min_val = st.number_input(
-            'Mininum Environment Temperature', value=df['Holtec/Environment/TIA/Value'].min())
+            'Mininum Environment Temperature (°C)', value=df['Holtec/Environment/TIA/Value'].min())
         # Let the user select the maximum value
         max_val = st.number_input(
-            'Maximum Environment Temperature', value=df['Holtec/Environment/TIA/Value'].max())
+            'Maximum Environment Temperature (°C)', value=df['Holtec/Environment/TIA/Value'].max())
         df = df[(df['Holtec/Environment/TIA/Value'] >= min_val) & (
             df['Holtec/Environment/TIA/Value'] <= max_val)]  # Filter DataFrame
         fig = px.scatter(df, x='t_stamp', y=[
