@@ -38,7 +38,7 @@ def HI82():
         st.download_button(
             label="Download data as Excel",
             data=output,
-            file_name='HI82 - Filtered.xlsx',
+            file_name=f'HI82 - Environment ({min_val}, {max_val}).xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
 
