@@ -22,7 +22,9 @@ def HI82():
         df = df[(df['Holtec/Environment/TIA/Value'] >= min_val) & (
             df['Holtec/Environment/TIA/Value'] <= max_val)]  # Filter DataFrame
         fig = px.scatter(df, x='t_stamp', y=[
-                         'Holtec/Casks/HI82/Average Temp', 'Holtec/Environment/TIA/Value'], title='HI82 Temperature Data')
+                         'Holtec/Casks/HI82/Average Temp',
+                         'Holtec/Environment/TIA/Value',
+                         'Holtec/Casks/HI82/Delta Temp'], title='HI82 Temperature Data')
         # Set y-axis limits and title
         fig.update_yaxes(range=[0, 100], title_text='Temperature (°C)')
         fig.update_xaxes(title_text='Date - Time')  # Set x-axis title
