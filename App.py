@@ -8,9 +8,9 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 
 def app():
-    st.set_page_config(page_title='HISTORM Temperature Data',
+    st.set_page_config(page_title='HISTORMs Temperature Data',
                        page_icon=':bar_chart:', layout='centered')
-    st.title('HISTORM Temperature Data')
+    st.title('HISTORMs Temperature Data')
     file = st.file_uploader('Upload xlsx file with all casks data', type=['xlsx'])
 
     if file:
