@@ -11,7 +11,7 @@ def app():
     st.set_page_config(page_title='HISTORM Temperature Data',
                        page_icon=':bar_chart:', layout='centered')
     st.title('HISTORM Temperature Data')
-    file = st.file_uploader('Upload a file', type=['xlsx'])
+    file = st.file_uploader('Upload xlsx file with all casks data', type=['xlsx'])
 
     if file:
         month_year = plot_all(file)
