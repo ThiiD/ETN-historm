@@ -8,7 +8,9 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 
 def app():
-    st.title('HS Temperature Data')
+    st.set_page_config(page_title='HISTORM Temperature Data',
+                       page_icon=':bar_chart:', layout='centered')
+    st.title('HISTORM Temperature Data')
     file = st.file_uploader('Upload a file', type=['xlsx'])
 
     if file:
@@ -23,7 +25,7 @@ def app():
             with open('plots.zip', 'rb') as f:
                 bytes = f.read()
                 st.download_button(
-                    label="Download plots",
+                    label="Download Temperature Plots Zip File",
                     data=bytes,
                     # Use the formatted date string
                     file_name=f"HS {month_year} Temperature Plots.zip",
@@ -76,7 +78,7 @@ def app():
         with open(doc_file_name, 'rb') as f:
             bytes = f.read()
             st.download_button(
-                label="Download docx",
+                label="Download COI 2PVT-UAS Word Document",
                 data=bytes,
                 file_name=doc_file_name,
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
