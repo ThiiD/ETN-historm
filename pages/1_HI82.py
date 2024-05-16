@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from io import BytesIO
 
 
 def HI82():
@@ -26,6 +27,20 @@ def HI82():
         fig.update_yaxes(range=[0, 100], title_text='Temperature (°C)')
         fig.update_xaxes(title_text='Date - Time')  # Set x-axis title
         st.plotly_chart(fig)
+
+        # Create a BytesIO object and write the DataFrame to it using ExcelWriter
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False)
+        output.seek(0)  # Go to the start of the BytesIO object
+
+        # Create a download button for the Excel file
+        st.download_button(
+            label="Download data as Excel",
+            data=output,
+            file_name='HI82 - Filtered.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
 
 
 HI82()
