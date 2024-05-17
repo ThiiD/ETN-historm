@@ -8,53 +8,73 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 
 def app():
-    st.set_page_config(page_title='HISTORMs Temperature Data',
-                       page_icon=':bar_chart:', layout='centered')
-    st.title('HISTORMs Temperature Data')
-    file = st.file_uploader('Upload xlsx file with all casks data', type=['xlsx'])
+    st.set_page_config(
+        page_title="HISTORMs Temperature Data",
+        page_icon=":bar_chart:",
+        layout="centered",
+    )
+    st.title("HISTORMs Temperature Data")
+    file = st.file_uploader("Upload xlsx file with all casks data", type=["xlsx"])
 
     if file:
         month_year = plot_all(file)
 
         # Create a zip file of the "plots" directory
-        shutil.make_archive('plots', 'zip', 'plots')
+        shutil.make_archive("plots", "zip", "plots")
 
         # Check if the zip file exists (i.e., the "plots" directory is not empty)
-        if os.path.exists('plots.zip'):
+        if os.path.exists("plots.zip"):
             # Create a download button for the zip file
-            with open('plots.zip', 'rb') as f:
+            with open("plots.zip", "rb") as f:
                 bytes = f.read()
                 st.download_button(
                     label="Download Temperature Plots Zip File",
                     data=bytes,
                     # Use the formatted date string
                     file_name=f"HS {month_year} Temperature Plots.zip",
-                    mime="application/zip"
+                    mime="application/zip",
                 )
 
-        MESES = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
-                 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO']
+        MESES = [
+            "JANEIRO",
+            "FEVEREIRO",
+            "MARÇO",
+            "ABRIL",
+            "MAIO",
+            "JUNHO",
+            "JULHO",
+            "AGOSTO",
+            "SETEMBRO",
+            "OUTUBRO",
+            "NOVEMBRO",
+            "DEZEMBRO",
+        ]
 
         # Open the document
-        doc = Document('2PVT-UAS 06.docx')
+        doc = Document("2PVT-UAS 06.docx")
 
         # Replace 'YYYY' with `month_year` in all paragraphs
         for paragraph in doc.paragraphs:
-            if 'MMMM/YYYY' in paragraph.text:
-                paragraph.text = paragraph.text.replace('MMMM/YYYY', month_year)
-            if 'YYYY' in paragraph.text:
-                paragraph.text = paragraph.text.replace('YYYY', month_year.split('.')[1])
+            if "MMMM/YYYY" in paragraph.text:
+                paragraph.text = paragraph.text.replace("MMMM/YYYY", month_year)
+            if "YYYY" in paragraph.text:
+                paragraph.text = paragraph.text.replace(
+                    "YYYY", month_year.split(".")[1]
+                )
 
         # Get the current directory
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         # Construct the path to the 'plots' directory
-        plots_dir = os.path.join(current_dir, 'plots')
+        plots_dir = os.path.join(current_dir, "plots")
 
         # List all the images in the 'plots' directory
         files_plot = os.listdir(plots_dir)
-        image_files = [f for f in files_plot if f.endswith(
-            ('.png', '.jpg', '.jpeg', '.gif', '.bmp'))]
+        image_files = [
+            f
+            for f in files_plot
+            if f.endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp"))
+        ]
 
         # Add each image to the document
         for image_file in image_files:
@@ -71,23 +91,23 @@ def app():
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
         # Save the document
-        doc_file_name = f'COI-DDD.O-0XX-23 - 2PVT-UAS 06 {month_year}.docx'
+        doc_file_name = f"COI-DDD.O-0XX-23 - 2PVT-UAS 06 {month_year}.docx"
         doc.save(doc_file_name)
 
         # Create a download button for the docx file
-        with open(doc_file_name, 'rb') as f:
+        with open(doc_file_name, "rb") as f:
             bytes = f.read()
             st.download_button(
                 label="Download COI 2PVT-UAS Word Document",
                 data=bytes,
                 file_name=doc_file_name,
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
 
         # Delete the zip file and the 'plots' directory
-        os.remove('plots.zip')
+        os.remove("plots.zip")
         os.remove(doc_file_name)
-        shutil.rmtree('plots')
+        shutil.rmtree("plots")
 
 
 app()
