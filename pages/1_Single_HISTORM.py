@@ -10,7 +10,7 @@ def SingleHISTORM():
         page_icon=":bar_chart:",
         layout="centered",
     )
-    st.title("Temperature Data")
+    st.title("Single HISTORM Temperature Data (62, 72, 82)")
 
     # Create a dropdown menu and store the selected option in a variable
     option = st.selectbox("Choose an option", ("62", "72", "82"))
