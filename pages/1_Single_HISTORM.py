@@ -4,22 +4,28 @@ import plotly.express as px
 from io import BytesIO
 
 
-def HI82():
+def SingleHISTORM():
     st.set_page_config(
-        page_title="HI82 Temperature Data", page_icon=":bar_chart:", layout="centered"
+        page_title="Single HISTORM Temperature Data",
+        page_icon=":bar_chart:",
+        layout="centered",
     )
-    st.title("HI82 Temperature Data")
-    file = st.file_uploader("Upload xlsx file with HI82 data", type=["xlsx"])
+    st.title("Temperature Data")
+
+    # Create a dropdown menu and store the selected option in a variable
+    option = st.selectbox("Choose an option", ("62", "72", "82"))
+
+    file = st.file_uploader(f"Upload xlsx file with HI{option} data", type=["xlsx"])
 
     if file:
         df = pd.read_excel(file)
         df = df.loc[
-            (df["Holtec/Casks/HI82/Average Temp"] > 0)
-            & (df["Holtec/Casks/HI82/Average Temp"] < 200)
+            (df[f"Holtec/Casks/HI{option}/Average Temp"] > 0)
+            & (df[f"Holtec/Casks/HI{option}/Average Temp"] < 200)
             & (df["Holtec/Environment/TIA/Value"] > 0)
             & (df["Holtec/Environment/TIA/Value"] < 200)
-            & (df["Holtec/Casks/HI82/Delta Temp"] < 200)
-            & (df["Holtec/Casks/HI82/Delta Temp"] > 0)
+            & (df[f"Holtec/Casks/HI{option}/Delta Temp"] < 200)
+            & (df[f"Holtec/Casks/HI{option}/Delta Temp"] > 0)
         ]
 
         # Let the user select the minimum value
@@ -40,11 +46,11 @@ def HI82():
             df,
             x="t_stamp",
             y=[
-                "Holtec/Casks/HI82/Average Temp",
+                f"Holtec/Casks/HI{option}/Average Temp",
                 "Holtec/Environment/TIA/Value",
-                "Holtec/Casks/HI82/Delta Temp",
+                f"Holtec/Casks/HI{option}/Delta Temp",
             ],
-            title="HI82 Temperature Data",
+            title=f"HI{option} Temperature Data",
         )
         # Set y-axis limits and title
         fig.update_yaxes(range=[0, 100], title_text="Temperature (°C)")
@@ -61,9 +67,9 @@ def HI82():
         st.download_button(
             label="Download data as Excel",
             data=output,
-            file_name=f"HI82 - Environment ({min_val}, {max_val}).xlsx",
+            file_name=f"HI{option} - Environment ({min_val}, {max_val}).xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
 
-HI82()
+SingleHISTORM()

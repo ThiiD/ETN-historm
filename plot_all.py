@@ -41,6 +41,9 @@ def plot_all(file: str):
             "HI61",
             "HI31",
             "HI81",
+            "HI62",
+            "HI72",
+            "HI82",
         ]:
             pass
         else:
