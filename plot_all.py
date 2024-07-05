@@ -6,28 +6,42 @@ import os
 
 
 def plot_all(file: str):
-    """Plots all the data from the given file
+    """
+    Generates and saves temperature difference plots for each unique 'Name' in the dataset.
+
+    This function reads a dataset from an Excel file, filters out rows with non-positive 'CaskAvg' or 'EnvAvg' values,
+    and generates a plot for each unique 'Name' in the dataset. The plots show the temperature difference between 'CaskAvg'
+    and 'EnvAvg', alongside the individual 'CaskAvg' and 'EnvAvg' temperatures over time. Each plot is saved in a 'plots'
+    directory with the 'Name' as part of the filename.
 
     Args:
-        file (str): file path
+        file (str): The path to the Excel file containing the dataset.
+
+    Returns:
+        str: The maximum date found in the 't_stamp' column of the dataset, formatted as 'MM.YYYY'.
+
+    Note:
+        - The function assumes the Excel file has columns 'Name', 't_stamp', 'CaskAvg', and 'EnvAvg'.
+        - Rows with non-positive values for 'CaskAvg' or 'EnvAvg' are excluded from the analysis.
+        - Plots are saved in the 'plots' directory, which is created if it does not exist.
     """
+
+    # Read the dataset from the Excel file
     df = pd.read_excel(file)
+
+    # Drop rows with missing values
     df = df.dropna()
+
+    # Filter out rows where 'CaskAvg' or 'EnvAvg' are less than or equal to zero
+    df = df[(df["CaskAvg"] > 0) & (df["EnvAvg"] > 0)]
+
+    # Get the unique 'Name' values in the dataset
     HISTORM_list = df["Name"].drop_duplicates().tolist()
 
     # Get the maximum date from the 't_stamp' column and format it as 'MM.YYYY'
     month_year = df["t_stamp"].max().strftime("%m.%Y")
 
-    # Calculate the mode temperature excluding zero and negative values
-    cask_mode_temp = df[df["CaskAvg"] > 0]["CaskAvg"].mode()[0]
-
-    # Replace zero temperature values with the mode
-    df["CaskAvg"] = df["CaskAvg"].replace(0, cask_mode_temp)
-
-    # Calculate the mode environment temperature excluding zero and negative values
-    env_mode_temp = df[df["EnvAvg"] > 0]["EnvAvg"].mode()[0]
-    df["EnvAvg"] = df["EnvAvg"].replace(0, env_mode_temp)
-
+    # Generate and save plots for each unique 'Name' in the dataset
     for HISTORM in HISTORM_list:
         if HISTORM not in [
             "HI80",
@@ -58,6 +72,7 @@ def plot_all(file: str):
         else:
             HI = df.loc[df["Name"] == HISTORM]
 
+            # Create a plot for the current 'Name'
             plt.figure(figsize=(16, 9), facecolor="white")
             plt.title(f"{HISTORM}")
             plt.plot(
@@ -65,8 +80,7 @@ def plot_all(file: str):
                 HI["CaskAvg"] - HI["EnvAvg"],
                 label=f"Holtec/Casks/{HISTORM}/Delta Temp",
             )
-            plt.plot(HI["t_stamp"], HI["EnvAvg"],
-                     label=f"Holtec/Environment/TIA/Value")
+            plt.plot(HI["t_stamp"], HI["EnvAvg"], label=f"Holtec/Environment/TIA/Value")
             plt.plot(
                 HI["t_stamp"],
                 HI["CaskAvg"],
@@ -79,13 +93,12 @@ def plot_all(file: str):
 
             # Set xticks to every day at 00:00
             ax = plt.gca()
-            ax.xaxis.set_major_locator(
-                mdates.DayLocator(interval=1)
-            )  # set xticks to every day
-            ax.xaxis.set_major_formatter(
-                mdates.DateFormatter("%d/%m/%y %H:%M")
-            )  # format xticks as 'day/month/year'
+            # set xticks to every day
+            ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+            # format xticks as 'day/month/year'
+            ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m/%y %H:%M"))
 
+            # set x-axis limits to first and last day
             start_date = datetime.datetime(
                 df["t_stamp"].dt.year.max(),
                 df["t_stamp"].dt.month.max(),
@@ -99,10 +112,12 @@ def plot_all(file: str):
                 00,
                 00,
             )
-            # set x-axis limits to first and last day
             ax.set_xlim([start_date, end_date])
 
+            # Rotate xticks for better readability
             plt.xticks(rotation=90)
+
+            # Set y-axis labels and limits
             plt.ylabel("Temperatura [°C]")
             plt.ylim(0, 100)
             plt.yticks(range(0, 101, 10))
@@ -114,10 +129,11 @@ def plot_all(file: str):
             if not os.path.exists("plots"):
                 os.makedirs("plots")
 
+            # Save the plot
             plt.savefig(f"plots/{HISTORM}.png", dpi=300, format="png")
 
             # close the plot
             plt.close()
 
-            # plt.show()
+    # Return the maximum date in the 't_stamp' column, to be used in the report
     return month_year
