@@ -18,11 +18,15 @@ def plot_all(file: str):
     # Get the maximum date from the 't_stamp' column and format it as 'MM.YYYY'
     month_year = df["t_stamp"].max().strftime("%m.%Y")
 
-    # Calculate the mode temperature excluding zeros
-    cask_mode_temp = df[df["CaskAvg"] != 0]["CaskAvg"].mode()[0]
+    # Calculate the mode temperature excluding zero and negative values
+    cask_mode_temp = df[df["CaskAvg"] > 0]["CaskAvg"].mode()[0]
 
     # Replace zero temperature values with the mode
     df["CaskAvg"] = df["CaskAvg"].replace(0, cask_mode_temp)
+
+    # Calculate the mode environment temperature excluding zero and negative values
+    env_mode_temp = df[df["EnvAvg"] > 0]["EnvAvg"].mode()[0]
+    df["EnvAvg"] = df["EnvAvg"].replace(0, env_mode_temp)
 
     for HISTORM in HISTORM_list:
         if HISTORM not in [
@@ -61,7 +65,8 @@ def plot_all(file: str):
                 HI["CaskAvg"] - HI["EnvAvg"],
                 label=f"Holtec/Casks/{HISTORM}/Delta Temp",
             )
-            plt.plot(HI["t_stamp"], HI["EnvAvg"], label=f"Holtec/Environment/TIA/Value")
+            plt.plot(HI["t_stamp"], HI["EnvAvg"],
+                     label=f"Holtec/Environment/TIA/Value")
             plt.plot(
                 HI["t_stamp"],
                 HI["CaskAvg"],
@@ -100,6 +105,7 @@ def plot_all(file: str):
             plt.xticks(rotation=90)
             plt.ylabel("Temperatura [°C]")
             plt.ylim(0, 100)
+            plt.yticks(range(0, 101, 10))
 
             # Save the plot as a high-quality image
             plt.tight_layout()
@@ -109,6 +115,9 @@ def plot_all(file: str):
                 os.makedirs("plots")
 
             plt.savefig(f"plots/{HISTORM}.png", dpi=300, format="png")
+
+            # close the plot
+            plt.close()
 
             # plt.show()
     return month_year
