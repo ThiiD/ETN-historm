@@ -34,7 +34,26 @@ def plot_all(file: str):
 
     # Filter out rows where 'CaskAvg' or 'EnvAvg' are less than or equal to zero
     df = df[(df["CaskAvg"] > 0) & (df["EnvAvg"] > 0)]
+    
+    # TODO: Delete the code below
+    # =============================================================================
+    # Assuming df is your DataFrame and you've already filtered it as shown
+    # Define your thresholds
+    high_threshold = 88
+    low_threshold = 67
 
+    # Filter the DataFrame for specific 'Name' values and apply the threshold conditions
+    filtered_names = df["Name"].isin(["HI83", "HI72"])
+    high_low_condition = (df["CaskAvg"] > high_threshold) | (df["CaskAvg"] < low_threshold)
+
+    # Combine both conditions and identify rows to drop
+    rows_to_drop = df[filtered_names & high_low_condition].index
+
+    # Drop these rows from the DataFrame
+    df = df.drop(rows_to_drop)
+    # =============================================================================
+    # TODO: Delete the code above
+    
     # Get the unique 'Name' values in the dataset
     HISTORM_list = df["Name"].drop_duplicates().tolist()
 
@@ -72,7 +91,8 @@ def plot_all(file: str):
         else:
             HI = df.loc[df["Name"] == HISTORM]
 
-            # Create a plot for the current 'Name'
+            # Create a plot for the current 'Name'  
+                
             plt.figure(figsize=(16, 9), facecolor="white")
             plt.title(f"{HISTORM}")
             plt.plot(
