@@ -8,15 +8,28 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 
 def app():
+    """
+    Streamlit app for processing HISTORMs temperature data.
+
+    This app allows users to upload an Excel file with temperature data, generates temperature plots for each HISTORM,
+    packages the plots into a zip file for download, and creates a Word document with the plots embedded. The document
+    and zip file are then made available for download. The app also cleans up generated files after the session.
+    """
+    # Configure Streamlit page settings
     st.set_page_config(
         page_title="HISTORMs Temperature Data",
         page_icon=":bar_chart:",
         layout="centered",
     )
+
+    # Display the app title
     st.title("HISTORMs Temperature Data")
+
+    # File uploader for the Excel file
     file = st.file_uploader("Upload xlsx file with all casks data", type=["xlsx"])
 
     if file:
+        # Generate plots from the uploaded file and get the month and year from the data
         month_year = plot_all(file)
 
         # Create a zip file of the "plots" directory
@@ -30,11 +43,11 @@ def app():
                 st.download_button(
                     label="Download Temperature Plots Zip File",
                     data=bytes,
-                    # Use the formatted date string
                     file_name=f"HS {month_year} Temperature Plots.zip",
                     mime="application/zip",
                 )
 
+        # List of months in Portuguese
         MESES = [
             "JANEIRO",
             "FEVEREIRO",
@@ -50,10 +63,10 @@ def app():
             "DEZEMBRO",
         ]
 
-        # Open the document
+        # Open the Word document template
         doc = Document("2PVT-UAS 06.docx")
 
-        # Replace 'YYYY' with `month_year` in all paragraphs
+        # Replace placeholders in the document with actual values
         for paragraph in doc.paragraphs:
             if "MMMM/YYYY" in paragraph.text:
                 paragraph.text = paragraph.text.replace("MMMM/YYYY", month_year)
@@ -68,7 +81,7 @@ def app():
         # Construct the path to the 'plots' directory
         plots_dir = os.path.join(current_dir, "plots")
 
-        # List all the images in the 'plots' directory
+        # List all the image files in the 'plots' directory
         files_plot = os.listdir(plots_dir)
         image_files = [
             f
@@ -76,25 +89,19 @@ def app():
             if f.endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp"))
         ]
 
-        # Add each image to the document
+        # Add each image to the Word document
         for image_file in image_files:
-            # Create a new paragraph
             paragraph = doc.add_paragraph()
-
-            # Add an image to the paragraph
             run = paragraph.add_run()
-            # Construct the full path to the image file
             image_path = os.path.join(plots_dir, image_file)
             run.add_picture(image_path, width=Inches(6.70))
-
-            # Align the paragraph to the right
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
-        # Save the document
+        # Save the modified document
         doc_file_name = f"COI-DDD.O-0XX-23 - 2PVT-UAS 06 {month_year}.docx"
         doc.save(doc_file_name)
 
-        # Create a download button for the docx file
+        # Create a download button for the Word document
         with open(doc_file_name, "rb") as f:
             bytes = f.read()
             st.download_button(
@@ -104,10 +111,11 @@ def app():
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
 
-        # Delete the zip file and the 'plots' directory
+        # Clean up: Delete the zip file, the Word document, and the 'plots' directory
         os.remove("plots.zip")
         os.remove(doc_file_name)
         shutil.rmtree("plots")
 
 
+# Run the app
 app()
