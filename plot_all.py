@@ -94,7 +94,7 @@ def plot_all(file: str):
 
             plt.xticks(rotation=90)
             plt.ylabel("Temperatura [°C]")
-            plt.ylim(0, 75)
+            plt.ylim(0, 100)
 
             # Save the plot as a high-quality image
             plt.tight_layout()
