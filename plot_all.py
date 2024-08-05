@@ -34,7 +34,7 @@ def plot_all(file: str):
 
     # Filter out rows where 'CaskAvg' or 'EnvAvg' are less than or equal to zero
     df = df[(df["CaskAvg"] > 0) & (df["EnvAvg"] > 0)]
-    
+
     # TODO: Delete the code below
     # =============================================================================
     # Assuming df is your DataFrame and you've already filtered it as shown
@@ -43,8 +43,29 @@ def plot_all(file: str):
     low_threshold = 67
 
     # Filter the DataFrame for specific 'Name' values and apply the threshold conditions
-    filtered_names = df["Name"].isin(["HI83", "HI72"])
-    high_low_condition = (df["CaskAvg"] > high_threshold) | (df["CaskAvg"] < low_threshold)
+    filtered_names = df["Name"].isin(["HI83", "HI72", "HI62", "HI52"])
+    high_low_condition = (df["CaskAvg"] > high_threshold) | (
+        df["CaskAvg"] < low_threshold
+    )
+
+    # Combine both conditions and identify rows to drop
+    rows_to_drop = df[filtered_names & high_low_condition].index
+
+    # Drop these rows from the DataFrame
+    df = df.drop(rows_to_drop)
+
+    # TODO: Delete the code below
+    # =============================================================================
+    # Assuming df is your DataFrame and you've already filtered it as shown
+    # Define your thresholds
+    high_threshold = 43
+    low_threshold = 30
+
+    # Filter the DataFrame for specific 'Name' values and apply the threshold conditions
+    filtered_names = df["Name"].isin(["HI21"])
+    high_low_condition = (df["CaskAvg"] > high_threshold) | (
+        df["CaskAvg"] < low_threshold
+    )
 
     # Combine both conditions and identify rows to drop
     rows_to_drop = df[filtered_names & high_low_condition].index
@@ -53,7 +74,7 @@ def plot_all(file: str):
     df = df.drop(rows_to_drop)
     # =============================================================================
     # TODO: Delete the code above
-    
+
     # Get the unique 'Name' values in the dataset
     HISTORM_list = df["Name"].drop_duplicates().tolist()
 
@@ -63,36 +84,39 @@ def plot_all(file: str):
     # Generate and save plots for each unique 'Name' in the dataset
     for HISTORM in HISTORM_list:
         if HISTORM not in [
-            "HI80",
-            "HI70",
-            "HI60",
-            "HI50",
-            "HI40",
-            "HI30",
-            "HI20",
-            "HI10",
-            "HI81",
-            "HI71",
-            "HI61",
             "HI51",
+            "HI81",
+            "HI73",
+            "HI83",
+            "HI40",
+            "HI61",
+            "HI63",
+            "HI52",
             "HI41",
             "HI31",
-            "HI21",
-            "HI82",
-            "HI72",
             "HI62",
-            "HI52",
+            "HI72",
+            "HI60",
             "HI42",
-            "HI83",
-            "HI73",
-            "HI63",
+            "HI80",
+            "HI30",
+            "HI10",
+            "HI82",
+            "HI43",
+            "HI71",
+            "HI84",
+            "HI53",
+            "HI50",
+            "HI21",
+            "HI20",
+            "HI70",
         ]:
             pass
         else:
             HI = df.loc[df["Name"] == HISTORM]
 
-            # Create a plot for the current 'Name'  
-                
+            # Create a plot for the current 'Name'
+
             plt.figure(figsize=(16, 9), facecolor="white")
             plt.title(f"{HISTORM}")
             plt.plot(
