@@ -9,7 +9,7 @@ import os
 
 def plot_all(file: str):
     # Read the data from the excel file
-    df = pd.read_excel("cask data monthly july.xlsx")
+    df = pd.read_excel(file)
 
     # Drop the columns that are not needed
     df = df[["Name", "t_stamp", "EnvAvg", "CaskAvg"]]
@@ -112,6 +112,3 @@ def plot_all(file: str):
 
     # Return the maximum date in the 't_stamp' column, to be used in the report
     return month_year
-
-
-plot_all("cask data monthly july.xlsx")
