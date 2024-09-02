@@ -1,183 +1,117 @@
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import zscore
+import seaborn as sns
 import matplotlib.dates as mdates
 import datetime
 import os
 
 
 def plot_all(file: str):
-    """
-    Generates and saves temperature difference plots for each unique 'Name' in the dataset.
+    # Read the data from the excel file
+    df = pd.read_excel("cask data monthly july.xlsx")
 
-    This function reads a dataset from an Excel file, filters out rows with non-positive 'CaskAvg' or 'EnvAvg' values,
-    and generates a plot for each unique 'Name' in the dataset. The plots show the temperature difference between 'CaskAvg'
-    and 'EnvAvg', alongside the individual 'CaskAvg' and 'EnvAvg' temperatures over time. Each plot is saved in a 'plots'
-    directory with the 'Name' as part of the filename.
+    # Drop the columns that are not needed
+    df = df[["Name", "t_stamp", "EnvAvg", "CaskAvg"]]
 
-    Args:
-        file (str): The path to the Excel file containing the dataset.
-
-    Returns:
-        str: The maximum date found in the 't_stamp' column of the dataset, formatted as 'MM.YYYY'.
-
-    Note:
-        - The function assumes the Excel file has columns 'Name', 't_stamp', 'CaskAvg', and 'EnvAvg'.
-        - Rows with non-positive values for 'CaskAvg' or 'EnvAvg' are excluded from the analysis.
-        - Plots are saved in the 'plots' directory, which is created if it does not exist.
-    """
-
-    # Read the dataset from the Excel file
-    df = pd.read_excel(file)
-
-    # Drop rows with missing values
+    # Drop the rows that have missing values
+    df = df[(df["CaskAvg"] > 0) & (df["EnvAvg"] > 0)]
     df = df.dropna()
 
-    # Filter out rows where 'CaskAvg' or 'EnvAvg' are less than or equal to zero
-    df = df[(df["CaskAvg"] > 0) & (df["EnvAvg"] > 0)]
-
-    # TODO: Delete the code below
-    # =============================================================================
-    # Assuming df is your DataFrame and you've already filtered it as shown
-    # Define your thresholds
-    high_threshold = 88
-    low_threshold = 67
-
-    # Filter the DataFrame for specific 'Name' values and apply the threshold conditions
-    filtered_names = df["Name"].isin(["HI83", "HI72", "HI62", "HI52"])
-    high_low_condition = (df["CaskAvg"] > high_threshold) | (
-        df["CaskAvg"] < low_threshold
+    # Step 1: Apply zscore within each group
+    df[["EnvAvg_z", "CaskAvg_z"]] = df.groupby("Name")[["EnvAvg", "CaskAvg"]].transform(
+        zscore
     )
 
-    # Combine both conditions and identify rows to drop
-    rows_to_drop = df[filtered_names & high_low_condition].index
+    # Step 2: Filter out the outliers (e.g., z-score greater than 2 or less than -2)
+    z_score_threshold = 2
+    df_filtered = df[
+        (df["EnvAvg_z"].abs() <= z_score_threshold)
+        & (df["CaskAvg_z"].abs() <= z_score_threshold)
+    ]
 
-    # Drop these rows from the DataFrame
-    df = df.drop(rows_to_drop)
+    # Drop the z-score columns if you don't need them anymore
+    df_filtered = df_filtered.drop(columns=["EnvAvg_z", "CaskAvg_z"])
+    df = df_filtered
 
-    # TODO: Delete the code below
-    # =============================================================================
-    # Assuming df is your DataFrame and you've already filtered it as shown
-    # Define your thresholds
-    high_threshold = 43
-    low_threshold = 30
+    # Set the style of the visualization
+    sns.set_theme(style="whitegrid")
 
-    # Filter the DataFrame for specific 'Name' values and apply the threshold conditions
-    filtered_names = df["Name"].isin(["HI21"])
-    high_low_condition = (df["CaskAvg"] > high_threshold) | (
-        df["CaskAvg"] < low_threshold
-    )
-
-    # Combine both conditions and identify rows to drop
-    rows_to_drop = df[filtered_names & high_low_condition].index
-
-    # Drop these rows from the DataFrame
-    df = df.drop(rows_to_drop)
-    # =============================================================================
-    # TODO: Delete the code above
-
-    # Get the unique 'Name' values in the dataset
-    HISTORM_list = df["Name"].drop_duplicates().tolist()
+    # Group by 'Name'
+    grouped = df_filtered.groupby("Name")
 
     # Get the maximum date from the 't_stamp' column and format it as 'MM.YYYY'
     month_year = df["t_stamp"].max().strftime("%m.%Y")
 
-    # Generate and save plots for each unique 'Name' in the dataset
-    for HISTORM in HISTORM_list:
-        if HISTORM not in [
-            "HI51",
-            "HI81",
-            "HI73",
-            "HI83",
-            "HI40",
-            "HI61",
-            "HI63",
-            "HI52",
-            "HI41",
-            "HI31",
-            "HI62",
-            "HI72",
-            "HI60",
-            "HI42",
-            "HI80",
-            "HI30",
-            "HI10",
-            "HI82",
-            "HI43",
-            "HI71",
-            "HI84",
-            "HI53",
-            "HI50",
-            "HI21",
-            "HI20",
-            "HI70",
-        ]:
-            pass
-        else:
-            HI = df.loc[df["Name"] == HISTORM]
+    # Create a plot for each group
+    for name, group in grouped:
+        plt.figure(figsize=(16, 9))
+        plt.plot(
+            group["t_stamp"],
+            group["CaskAvg"] - group["EnvAvg"],
+            label=f"Holtec/Casks/{name}/Delta Temp",
+        )
+        plt.plot(
+            group["t_stamp"], group["EnvAvg"], label=f"Holtec/Environment/TIA/Value"
+        )
+        plt.plot(
+            group["t_stamp"],
+            group["CaskAvg"],
+            label=f"Holtec/Casks/{name}/Average Temp",
+            color="grey",
+        )
 
-            # Create a plot for the current 'Name'
+        # Add titles and labels
+        plt.title(f"{name}")
+        plt.xlabel("Data")
+        plt.legend()
+        plt.grid(alpha=0.6, linestyle="--")
 
-            plt.figure(figsize=(16, 9), facecolor="white")
-            plt.title(f"{HISTORM}")
-            plt.plot(
-                HI["t_stamp"],
-                HI["CaskAvg"] - HI["EnvAvg"],
-                label=f"Holtec/Casks/{HISTORM}/Delta Temp",
-            )
-            plt.plot(HI["t_stamp"], HI["EnvAvg"], label=f"Holtec/Environment/TIA/Value")
-            plt.plot(
-                HI["t_stamp"],
-                HI["CaskAvg"],
-                label=f"Holtec/Casks/{HISTORM}/Average Temp",
-                color="grey",
-            )
-            plt.legend()
-            plt.grid(alpha=0.6, linestyle="--")
-            plt.xlabel("Data")
+        # Set xticks to every day at 00:00
+        ax = plt.gca()
+        # set xticks to every day
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+        # format xticks as 'day/month/year'
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m/%y %H:%M"))
 
-            # Set xticks to every day at 00:00
-            ax = plt.gca()
-            # set xticks to every day
-            ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-            # format xticks as 'day/month/year'
-            ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m/%y %H:%M"))
+        # set x-axis limits to first and last day
+        start_date = datetime.datetime(
+            df["t_stamp"].dt.year.max(),
+            df["t_stamp"].dt.month.max(),
+            df["t_stamp"].dt.day.min(),
+        )
+        end_date = datetime.datetime(
+            df["t_stamp"].dt.year.max(),
+            df["t_stamp"].dt.month.max(),
+            df["t_stamp"].dt.day.max(),
+            12,
+            00,
+            00,
+        )
+        ax.set_xlim([start_date, end_date])
 
-            # set x-axis limits to first and last day
-            start_date = datetime.datetime(
-                df["t_stamp"].dt.year.max(),
-                df["t_stamp"].dt.month.max(),
-                df["t_stamp"].dt.day.min(),
-            )
-            end_date = datetime.datetime(
-                df["t_stamp"].dt.year.max(),
-                df["t_stamp"].dt.month.max(),
-                df["t_stamp"].dt.day.max(),
-                12,
-                00,
-                00,
-            )
-            ax.set_xlim([start_date, end_date])
+        # Rotate x-axis labels for better readability
+        plt.xticks(rotation=90)
 
-            # Rotate xticks for better readability
-            plt.xticks(rotation=90)
+        # Set y-axis labels and limits
+        plt.ylabel("Temperatura [°C]")
+        plt.ylim(0, 100)
+        plt.yticks(range(0, 101, 10))
 
-            # Set y-axis labels and limits
-            plt.ylabel("Temperatura [°C]")
-            plt.ylim(0, 100)
-            plt.yticks(range(0, 101, 10))
+        # Show the plot
+        plt.tight_layout()
+        # Check if the directory exists and create it if it doesn't
+        if not os.path.exists("plots"):
+            os.makedirs("plots")
 
-            # Save the plot as a high-quality image
-            plt.tight_layout()
+        # Save the plot
+        plt.savefig(f"plots/{name}.png", dpi=300, format="png")
 
-            # Check if the directory exists and create it if it doesn't
-            if not os.path.exists("plots"):
-                os.makedirs("plots")
-
-            # Save the plot
-            plt.savefig(f"plots/{HISTORM}.png", dpi=300, format="png")
-
-            # close the plot
-            plt.close()
+        # close the plot
+        plt.close()
 
     # Return the maximum date in the 't_stamp' column, to be used in the report
     return month_year
+
+
+plot_all("cask data monthly july.xlsx")
