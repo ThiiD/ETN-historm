@@ -18,6 +18,9 @@ def plot_all(file: str):
     df = df[(df["CaskAvg"] > 0) & (df["EnvAvg"] > 0)]
     df = df.dropna()
 
+    # Sort the DataFrame by 't_stamp' in ascending order
+    df = df.sort_values(by="t_stamp")
+
     # Step 1: Apply zscore within each group
     df[["EnvAvg_z", "CaskAvg_z"]] = df.groupby("Name")[["EnvAvg", "CaskAvg"]].transform(
         zscore
